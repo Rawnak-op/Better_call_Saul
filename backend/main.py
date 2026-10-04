@@ -39,7 +39,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Create shared service instances and data directories on startup."""
     # Ensure data directories exist
     Path(settings.DOCUMENTS_DIR).mkdir(parents=True, exist_ok=True)
-    Path(settings.CHROMA_PERSIST_DIR).mkdir(parents=True, exist_ok=True)
     logger.info("Data directories ready.")
 
     # Initialise shared services (expensive — do once at startup)
@@ -65,7 +64,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(
     title="Saul - Legal AI Assistant",
     description=(
-        "A RAG-powered legal chatbot backed by ChromaDB and OpenAI. "
+        "A RAG-powered legal chatbot backed by Pinecone and OpenAI. "
         "Upload legal documents and ask Saul anything about them."
     ),
     version="1.0.0",
