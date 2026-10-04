@@ -75,10 +75,13 @@ export default function Sidebar({
 
       {/* ── Footer disclaimer ──────────────────────────────── */}
       <div className="flex-shrink-0 px-5 py-4 border-t border-white/5 bg-dark/30">
-        <p className="text-[10px] text-slate-600 leading-relaxed text-center">
+        <p className="text-[10px] text-slate-600 leading-relaxed text-center mb-2">
           ⚖️ For informational purposes only.
           <br />
           Not a substitute for professional legal advice.
+        </p>
+        <p className="text-[10px] text-slate-500/80 font-medium text-center">
+          &copy; {new Date().getFullYear()} Rawnak Yadav
         </p>
       </div>
     </aside>

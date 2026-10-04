@@ -137,7 +137,7 @@ export default function ChatWindow({ messages, isLoading, sendMessage, clearChat
         </div>
 
         <p className="text-center text-xs text-slate-600 mt-2">
-          For informational purposes only · Not a substitute for professional legal advice
+          For informational purposes only · Not a substitute for professional legal advice · &copy; {new Date().getFullYear()} Rawnak Yadav
         </p>
       </div>
     </div>
