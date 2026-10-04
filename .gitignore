@@ -33,9 +33,7 @@ venv/
 ENV/
 env/
 
-# Vector Store and Uploaded Documents (Keep folder structure, ignore data)
-backend/data/chroma_db/*
-!backend/data/chroma_db/.gitkeep
+# Uploaded Documents (Keep folder structure, ignore data)
 backend/data/documents/*
 !backend/data/documents/.gitkeep
 

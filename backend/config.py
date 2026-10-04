@@ -39,7 +39,8 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
 
     # --- Storage paths ---
-    CHROMA_PERSIST_DIR: str = str(BASE_DIR / "data" / "chroma_db")
+    PINECONE_API_KEY: str = ""
+    PINECONE_INDEX_NAME: str = "saul-legal-index"
     DOCUMENTS_DIR: str = str(BASE_DIR / "data" / "documents")
 
     @field_validator("CORS_ORIGINS", mode="before")
