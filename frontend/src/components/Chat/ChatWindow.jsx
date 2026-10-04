@@ -55,6 +55,12 @@ export default function ChatWindow({ messages, isLoading, sendMessage, clearChat
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
+      // Allow Enter to naturally create a newline on mobile/touch devices
+      const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+      if (isMobile) {
+        return;
+      }
+      
       e.preventDefault();
       handleSend();
     }
