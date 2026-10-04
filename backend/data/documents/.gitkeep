@@ -1,0 +1,2 @@
+# This directory stores raw uploaded documents (PDF, DOCX, TXT, HTML).
+# The folder is created automatically on server startup.

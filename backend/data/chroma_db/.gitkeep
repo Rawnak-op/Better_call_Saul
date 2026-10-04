@@ -1,0 +1,2 @@
+# This directory stores ChromaDB's persistent vector database.
+# The folder is created automatically on server startup.
