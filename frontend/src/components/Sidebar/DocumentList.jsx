@@ -99,35 +99,7 @@ export default function DocumentList({ documents, onDelete }) {
               </div>
             </div>
 
-            {/* Delete / confirm area */}
-            <div className="flex-shrink-0 flex items-center">
-              {isDeleting ? (
-                <Loader2 className="w-4 h-4 text-slate-500 animate-spin" />
-              ) : isConfirming ? (
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => handleConfirmDelete(doc.filename)}
-                    className="text-[11px] px-2 py-0.5 rounded bg-red-800/70 hover:bg-red-700/70 text-red-300 font-medium transition-colors"
-                  >
-                    Delete
-                  </button>
-                  <button
-                    onClick={() => setConfirmFile(null)}
-                    className="text-[11px] px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-slate-400 font-medium transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => handleDeleteClick(doc.filename)}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-red-900/40 text-slate-500 hover:text-red-400 transition-all"
-                  title="Delete document"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+            {/* Delete / confirm area removed for public site security */}
           </li>
         );
       })}

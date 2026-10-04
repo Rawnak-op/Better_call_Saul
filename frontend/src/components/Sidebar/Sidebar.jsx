@@ -40,17 +40,7 @@ export default function Sidebar({
 
       {/* ── Scrollable body ────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-        {/* Upload section */}
-        <section>
-          <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">
-            Upload Legal Document
-          </h3>
-          <DocumentUpload
-            onUpload={onUpload}
-            isUploading={isUploading}
-            uploadProgress={uploadProgress}
-          />
-        </section>
+        {/* Upload section removed for public site security */}
 
         {/* Knowledge base section */}
         <section>
