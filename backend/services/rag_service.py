@@ -107,8 +107,27 @@ class RAGService:
             query=user_message, k=settings.MAX_RETRIEVAL_DOCS
         )
 
+        # 2b. Cosine Similarity Threshold Check
+        # Reject out-of-domain or low-confidence queries before wasting LLM tokens
+        valid_chunks = [item for item in retrieved if item[1] >= settings.SIMILARITY_THRESHOLD]
+
+        if not valid_chunks:
+            logger.info(
+                "Query below similarity threshold (%.2f). Rejecting out-of-domain request.",
+                settings.SIMILARITY_THRESHOLD,
+            )
+            return ChatResponse(
+                answer=(
+                    "I am Saul, an AI legal assistant trained specifically on penal codes and criminal law statutes. "
+                    "I could not locate any sufficiently relevant statutory provisions or legal precedents in my knowledge base "
+                    "pertaining to your query. Please consult me on a criminal or statutory law matter."
+                ),
+                sources=[],
+                session_id=session_id,
+            )
+
         # 3. Build context string and source list
-        context_block, source_documents = self._build_context(retrieved)
+        context_block, source_documents = self._build_context(valid_chunks)
 
         # 4. Construct the LangChain message list
         lc_messages = self._build_lc_messages(messages, context_block)

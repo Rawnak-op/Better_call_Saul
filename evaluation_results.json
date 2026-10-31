@@ -1,0 +1,126 @@
+{
+  "recall_at_k": 100.0,
+  "mrr": 1.0,
+  "avg_legal_similarity": 0.6724,
+  "avg_ood_similarity": 0.1309,
+  "separation_margin": 0.5415,
+  "tests": [
+    {
+      "id": "T01",
+      "category": "Offenses Against Property",
+      "hit": true,
+      "first_hit_rank": 1,
+      "top_score": 0.7348,
+      "matched": [
+        "dishonestly",
+        "379",
+        "theft"
+      ]
+    },
+    {
+      "id": "T02",
+      "category": "Offenses Affecting Life",
+      "hit": true,
+      "first_hit_rank": 1,
+      "top_score": 0.7279,
+      "matched": [
+        "murder",
+        "culpable homicide",
+        "300",
+        "299"
+      ]
+    },
+    {
+      "id": "T03",
+      "category": "Offenses Affecting Life",
+      "hit": true,
+      "first_hit_rank": 1,
+      "top_score": 0.628,
+      "matched": [
+        "imprisonment for life",
+        "death"
+      ]
+    },
+    {
+      "id": "T04",
+      "category": "Offenses Against Body",
+      "hit": true,
+      "first_hit_rank": 1,
+      "top_score": 0.6668,
+      "matched": [
+        "abduction",
+        "kidnapping"
+      ]
+    },
+    {
+      "id": "T05",
+      "category": "Extortion & Robbery",
+      "hit": true,
+      "first_hit_rank": 1,
+      "top_score": 0.668,
+      "matched": [
+        "extortion",
+        "robbery",
+        "383",
+        "390"
+      ]
+    },
+    {
+      "id": "T06",
+      "category": "Cheating & Fraud",
+      "hit": true,
+      "first_hit_rank": 1,
+      "top_score": 0.7291,
+      "matched": [
+        "cheating",
+        "415",
+        "420"
+      ]
+    },
+    {
+      "id": "T07",
+      "category": "Criminal Misappropriation",
+      "hit": true,
+      "first_hit_rank": 1,
+      "top_score": 0.7052,
+      "matched": [
+        "405",
+        "misappropriation",
+        "403",
+        "breach of trust"
+      ]
+    },
+    {
+      "id": "T08",
+      "category": "Defamation",
+      "hit": true,
+      "first_hit_rank": 1,
+      "top_score": 0.6323,
+      "matched": [
+        "500",
+        "imputation",
+        "defamation"
+      ]
+    },
+    {
+      "id": "T09",
+      "category": "Criminal Conspiracy & Abetment",
+      "hit": true,
+      "first_hit_rank": 1,
+      "top_score": 0.7155,
+      "matched": [
+        "120A",
+        "conspiracy",
+        "abetment",
+        "107"
+      ]
+    },
+    {
+      "id": "T10",
+      "category": "Out-of-Domain Control Test",
+      "hit": null,
+      "top_score": 0.1424,
+      "notes": "Negative control test"
+    }
+  ]
+}
