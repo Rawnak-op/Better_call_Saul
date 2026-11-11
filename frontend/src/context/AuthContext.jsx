@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
 
 const AuthContext = createContext(null);
 
@@ -42,22 +43,27 @@ export function AuthProvider({ children }) {
   };
 
   /**
-   * Continue / Login with Google (Simulated OAuth flow with client-side session)
+   * Handle real Google OAuth credential response (JWT token)
    */
-  const loginWithGoogle = (customProfile = {}) => {
-    const defaultName = customProfile.name || 'Advocate Client';
-    const defaultEmail = customProfile.email || 'client@gmail.com';
-    const newUser = {
-      id: 'goog_' + Math.random().toString(36).substr(2, 9),
-      name: defaultName,
-      email: defaultEmail,
-      avatar: customProfile.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(defaultName)}&backgroundColor=f59e0b&textColor=000`,
-      provider: 'google',
-      isGuest: false,
-    };
-    setUser(newUser);
-    setIsAuthModalOpen(false);
-    return newUser;
+  const handleGoogleSuccess = (credentialResponse) => {
+    try {
+      if (credentialResponse.credential) {
+        const decoded = jwtDecode(credentialResponse.credential);
+        const newUser = {
+          id: decoded.sub || 'goog_' + Math.random().toString(36).substr(2, 9),
+          name: decoded.name || decoded.given_name || 'Client',
+          email: decoded.email,
+          avatar: decoded.picture || null,
+          provider: 'google',
+          isGuest: false,
+        };
+        setUser(newUser);
+        setIsAuthModalOpen(false);
+        return newUser;
+      }
+    } catch (err) {
+      console.error('Failed to decode Google JWT token:', err);
+    }
   };
 
   /**
@@ -93,7 +99,7 @@ export function AuthProvider({ children }) {
         isAuthModalOpen,
         setIsAuthModalOpen,
         loginWithEmail,
-        loginWithGoogle,
+        handleGoogleSuccess,
         continueAsGuest,
         logout,
       }}

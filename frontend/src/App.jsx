@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Scale, Menu, X, LogIn } from 'lucide-react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { useChat } from './hooks/useChat';
 import Sidebar from './components/Sidebar/Sidebar';
 import ChatWindow from './components/Chat/ChatWindow';
 import AuthModal from './components/Auth/AuthModal';
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '1008861057021-tuvpu1vq4drl4rfliui0gckpbgp5pgqv.apps.googleusercontent.com';
 
 function AppContent() {
   const {
@@ -115,8 +118,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
