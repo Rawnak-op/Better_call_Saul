@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Scale, Menu, X } from 'lucide-react';
+import { Scale, Menu, X, LogIn } from 'lucide-react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { useChat } from './hooks/useChat';
 import Sidebar from './components/Sidebar/Sidebar';
 import ChatWindow from './components/Chat/ChatWindow';
+import AuthModal from './components/Auth/AuthModal';
 
-export default function App() {
+function AppContent() {
   const {
     messages,
     isLoading,
@@ -16,7 +18,7 @@ export default function App() {
     deleteSession,
   } = useChat();
 
-  // Mobile sidebar toggle
+  const { isAuthModalOpen, setIsAuthModalOpen, user, isGuest } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -55,18 +57,30 @@ export default function App() {
 
       {/* ── Main chat panel ───────────────────────────────────── */}
       <main className="flex-1 flex flex-col min-w-0 h-full">
-        {/* Mobile header with sidebar toggle */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5 bg-dark-surface md:hidden flex-shrink-0">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-lg text-slate-400 hover:text-gold hover:bg-gold/10 transition-all"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-          <div className="flex items-center gap-2">
-            <Scale className="w-4 h-4 text-gold" />
-            <span className="font-bold text-gold tracking-wider">SAUL</span>
+        {/* Mobile header with sidebar toggle & sign in */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-dark-surface md:hidden flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-lg text-slate-400 hover:text-gold hover:bg-gold/10 transition-all"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-2">
+              <Scale className="w-4 h-4 text-gold" />
+              <span className="font-bold text-gold tracking-wider">SAUL</span>
+            </div>
           </div>
+
+          {(!user || isGuest) && (
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 hover:bg-gold/20 text-gold text-xs font-semibold rounded-lg border border-gold/30 transition-all"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Sign In</span>
+            </button>
+          )}
         </div>
 
         {/* Chat window fills remaining height */}
@@ -89,6 +103,20 @@ export default function App() {
           <X className="w-4 h-4" />
         </button>
       )}
+
+      {/* Sign In / Sign Up Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

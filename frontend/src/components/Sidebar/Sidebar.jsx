@@ -1,12 +1,6 @@
-import { Scale, MessageSquare, Plus, Trash2, ShieldCheck, BookOpen, Clock } from 'lucide-react';
+import { Scale, MessageSquare, Plus, Trash2, ShieldCheck, BookOpen, Clock, LogIn, LogOut, User } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
-/**
- * Sidebar — left panel displaying:
- * 1. "New Consultation" Action Button (similar to ChatGPT / Gemini)
- * 2. Recent Case Consultations (Conversation History)
- * 3. Verified Legal Statutes (Clean Knowledge Base badges with zero cold-start delay)
- * 4. Client Disclaimer & Copyright
- */
 export default function Sidebar({
   sessions = [],
   activeSessionId,
@@ -14,6 +8,8 @@ export default function Sidebar({
   onNewSession,
   onDeleteSession,
 }) {
+  const { user, isAuthenticated, isGuest, setIsAuthModalOpen, logout } = useAuth();
+
   return (
     <aside className="flex flex-col h-full bg-dark-surface border-r border-white/5 w-full overflow-hidden">
       {/* ── Branding ───────────────────────────────────────── */}
@@ -29,8 +25,55 @@ export default function Sidebar({
         </div>
       </div>
 
+      {/* ── User Status / Sign In Pill ─────────────────────── */}
+      <div className="px-4 pt-3.5 pb-1">
+        {isAuthenticated && !isGuest ? (
+          <div className="flex items-center justify-between p-2 rounded-xl bg-dark-card border border-white/10 text-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              {user.avatar ? (
+                <img src={user.avatar} alt="Profile" className="w-7 h-7 rounded-full object-cover border border-gold/40" />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-gold/20 text-gold flex items-center justify-center font-bold text-xs">
+                  {user.name?.[0]?.toUpperCase() || 'U'}
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="font-semibold text-slate-200 truncate">{user.name}</p>
+                <p className="text-[10px] text-slate-500 truncate">{user.email || 'Verified Client'}</p>
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              className="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-white/5 transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between p-2 rounded-xl bg-gold/5 border border-gold/20 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center">
+                <User className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <p className="font-medium text-slate-300">Guest Client</p>
+                <p className="text-[10px] text-slate-500">Unsaved sessions</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="flex items-center gap-1 px-2.5 py-1 bg-gold hover:bg-gold-light text-dark font-bold text-[11px] rounded-lg transition-all shadow-sm"
+            >
+              <LogIn className="w-3 h-3" />
+              <span>Sign In</span>
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* ── New Chat / Consultation Button ─────────────────── */}
-      <div className="px-4 pt-4 pb-2">
+      <div className="px-4 py-2">
         <button
           onClick={onNewSession}
           className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gold/15 hover:bg-gold/25 border border-gold/30 hover:border-gold/50 text-gold text-xs font-semibold rounded-xl transition-all shadow-sm"
@@ -41,8 +84,8 @@ export default function Sidebar({
       </div>
 
       {/* ── Scrollable Body ────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-6">
-        {/* Section 1: Recent Consultations (like ChatGPT/Gemini) */}
+      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-5">
+        {/* Section 1: Recent Consultations */}
         <section>
           <div className="flex items-center gap-2 mb-2 px-1">
             <Clock className="w-3.5 h-3.5 text-slate-500" />
@@ -54,7 +97,7 @@ export default function Sidebar({
           {sessions.length === 0 ? (
             <div className="px-3 py-4 text-center border border-dashed border-white/5 rounded-xl">
               <p className="text-xs text-slate-500">No previous consultations</p>
-              <p className="text-[11px] text-slate-600 mt-1">Your conversations will be saved here</p>
+              <p className="text-[11px] text-slate-600 mt-1">Your conversations will appear here</p>
             </div>
           ) : (
             <div className="space-y-1">
@@ -92,7 +135,7 @@ export default function Sidebar({
           )}
         </section>
 
-        {/* Section 2: Active Legal Statutes & Corpus (Clean replacements for raw PDFs) */}
+        {/* Section 2: Active Legal Statutes & Grounding */}
         <section className="pt-2 border-t border-white/5">
           <div className="flex items-center gap-2 mb-2 px-1">
             <BookOpen className="w-3.5 h-3.5 text-slate-500" />
