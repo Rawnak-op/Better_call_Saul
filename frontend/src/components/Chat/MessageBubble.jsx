@@ -61,8 +61,8 @@ function SaulBubble({ message }) {
   return (
     <div className="flex items-start gap-3 group">
       {/* Avatar */}
-      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gold/10 border border-gold/40 flex items-center justify-center mt-1">
-        <Scale className="w-4 h-4 text-gold" />
+      <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden border border-gold/40 shadow-sm shadow-gold/20 flex items-center justify-center mt-1 bg-dark">
+        <img src="/saul-avatar.jpg" alt="Saul" className="w-full h-full object-cover" />
       </div>
 
       <div className="flex-1 max-w-[90%] md:max-w-[80%]">

@@ -43,8 +43,8 @@ export default function Sidebar({
       {/* ── Branding ───────────────────────────────────────── */}
       <div className="flex-shrink-0 px-5 py-5 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/30 flex items-center justify-center shadow-lg shadow-gold/10">
-            <Scale className="w-5 h-5 text-gold" />
+          <div className="w-10 h-10 rounded-xl overflow-hidden border border-gold/40 shadow-lg shadow-gold/15 flex-shrink-0 bg-dark">
+            <img src="/saul-avatar.jpg" alt="Saul Goodman" className="w-full h-full object-cover" />
           </div>
           <div>
             <h2 className="text-xl font-black text-gold tracking-widest leading-none">SAUL</h2>

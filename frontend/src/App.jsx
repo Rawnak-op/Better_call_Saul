@@ -76,7 +76,9 @@ function AppContent() {
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
-              <Scale className="w-4 h-4 text-gold" />
+              <div className="w-6 h-6 rounded-full overflow-hidden border border-gold/40 flex-shrink-0 bg-dark">
+                <img src="/saul-avatar.jpg" alt="Saul" className="w-full h-full object-cover" />
+              </div>
               <span className="font-bold text-gold tracking-wider">SAUL</span>
             </div>
           </div>

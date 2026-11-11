@@ -113,8 +113,8 @@ export default function ChatWindow({ messages, isLoading, sendMessage, clearChat
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-dark-surface/50 backdrop-blur-sm flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gold/10 border border-gold/40 flex items-center justify-center">
-            <Scale className="w-5 h-5 text-gold" />
+          <div className="w-10 h-10 rounded-full overflow-hidden border border-gold/50 shadow-md shadow-gold/20 flex-shrink-0 bg-dark">
+            <img src="/saul-avatar.jpg" alt="Saul Goodman" className="w-full h-full object-cover" />
           </div>
           <div>
             <h1 className="text-lg font-bold text-gold tracking-wide">SAUL</h1>
