@@ -49,8 +49,8 @@ export default function AuthModal({ isOpen, onClose }) {
 
         {/* Branding header */}
         <div className="text-center mb-6">
-          <div className="inline-flex w-12 h-12 rounded-2xl bg-gold/10 border border-gold/40 items-center justify-center mb-3 shadow-lg shadow-gold/10">
-            <Scale className="w-6 h-6 text-gold" />
+          <div className="inline-flex w-12 h-12 rounded-2xl border border-gold/40 items-center justify-center mb-3 shadow-lg shadow-gold/10 overflow-hidden">
+            <img src="/saul-avatar.jpg" alt="Saul Goodman" className="w-full h-full object-cover" />
           </div>
           <h2 className="text-2xl font-black text-gold tracking-wider">
             {isSignUp ? 'CREATE ACCOUNT' : 'CLIENT SIGN IN'}
