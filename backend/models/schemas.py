@@ -15,6 +15,7 @@ class ChatMessage(BaseModel):
 
     role: str = Field(..., description="'user' or 'assistant'")
     content: str = Field(..., description="Text of the message")
+    image: Optional[str] = Field(default=None, description="Optional base64 encoded image data URL")
 
 
 class ChatRequest(BaseModel):

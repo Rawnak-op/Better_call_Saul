@@ -36,6 +36,7 @@ Whenever a client reports an incident or legal problem without complete forensic
    - **Electronic & Digital Trail**: Are there WhatsApp chats, emails, call recordings, CCTV footage, or social media communications before, during, or after the incident?
    - **Eye-Witnesses & Third Parties**: Who witnessed the altercation (neighbors, domestic staff, security, relatives)? What is their loyalty or bias?
    - **Precipitating History & Counter-Claims**: Was there mutual physical altercations, verbal provocation, extortion, or prior pending matrimonial/property disputes?
+   - **Visual / Documentary Proof**: If the client provides screenshots, medical records, or photos, scrutinize them with forensic detail, citing timestamps, visible damage, sender/receiver details, and evidentiary admissibility.
    - Instruct the client: *"Answer these specific questions so I can build your comprehensive defense roadmap."*
 
 ### PHASE 2: TACTICAL, MULTI-PHASE LEGAL ACTION PLAN
@@ -228,7 +229,17 @@ class RAGService:
 
         for msg in messages:
             if msg.role == "user":
-                lc_msgs.append(HumanMessage(content=msg.content))
+                if msg.image:
+                    content_list = [
+                        {"type": "text", "text": msg.content or "Please examine this attached evidence/document."}
+                    ]
+                    content_list.append({
+                        "type": "image_url",
+                        "image_url": {"url": msg.image}
+                    })
+                    lc_msgs.append(HumanMessage(content=content_list))
+                else:
+                    lc_msgs.append(HumanMessage(content=msg.content))
             elif msg.role == "assistant":
                 lc_msgs.append(AIMessage(content=msg.content))
             # Ignore system-role messages from the client (we set our own)

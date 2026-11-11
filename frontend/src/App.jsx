@@ -1,21 +1,20 @@
 import { useState } from 'react';
 import { Scale, Menu, X } from 'lucide-react';
 import { useChat } from './hooks/useChat';
-import { useDocuments } from './hooks/useDocuments';
 import Sidebar from './components/Sidebar/Sidebar';
 import ChatWindow from './components/Chat/ChatWindow';
 
 export default function App() {
-  const { messages, isLoading, sendMessage, clearChat } = useChat();
   const {
-    documents,
-    isUploading,
-    uploadProgress,
-    error: documentsError,
-    uploadDocument,
-    deleteDocument,
-    fetchDocuments,
-  } = useDocuments();
+    messages,
+    isLoading,
+    sessionId,
+    sessions,
+    sendMessage,
+    startNewChat,
+    switchSession,
+    deleteSession,
+  } = useChat();
 
   // Mobile sidebar toggle
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -40,13 +39,17 @@ export default function App() {
         `}
       >
         <Sidebar
-          documents={documents}
-          isUploading={isUploading}
-          uploadProgress={uploadProgress}
-          onUpload={uploadDocument}
-          onDelete={deleteDocument}
-          onRefresh={fetchDocuments}
-          documentsError={documentsError}
+          sessions={sessions}
+          activeSessionId={sessionId}
+          onSelectSession={(id) => {
+            switchSession(id);
+            setSidebarOpen(false);
+          }}
+          onNewSession={() => {
+            startNewChat();
+            setSidebarOpen(false);
+          }}
+          onDeleteSession={deleteSession}
         />
       </div>
 
@@ -72,7 +75,7 @@ export default function App() {
             messages={messages}
             isLoading={isLoading}
             sendMessage={sendMessage}
-            clearChat={clearChat}
+            clearChat={startNewChat}
           />
         </div>
       </main>
