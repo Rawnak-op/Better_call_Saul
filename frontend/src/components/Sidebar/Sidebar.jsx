@@ -1,5 +1,32 @@
-import { Scale, MessageSquare, Plus, Trash2, ShieldCheck, BookOpen, Clock, LogIn, LogOut, User } from 'lucide-react';
+import { Scale, MessageSquare, Plus, Trash2, Clock, LogIn, LogOut, User, Compass, ShieldAlert, FileText, Camera, HelpCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+
+const QUICK_PLAYBOOKS = [
+  {
+    icon: '🛡️',
+    title: 'Police Summons / Sec 41A',
+    desc: 'What to do when called to the police station',
+    prompt: 'I received a call/summons from the police to appear at the station under Section 41A. How do I protect myself from arbitrary arrest and what are my legal rights?',
+  },
+  {
+    icon: '⚖️',
+    title: 'Anticipatory Bail Roadmap',
+    desc: 'Pre-arrest protection grounds & process',
+    prompt: 'I fear someone is going to file a false FIR against me. Explain the step-by-step roadmap to secure Anticipatory Bail before the Sessions Court or High Court.',
+  },
+  {
+    icon: '📱',
+    title: 'Electronic Evidence (Sec 65B)',
+    desc: 'Admissibility of WhatsApp & CCTV',
+    prompt: 'I have WhatsApp chats, call recordings, and photos as proof. How do I make electronic evidence legally admissible in court under Section 65B of the Evidence Act / BSA?',
+  },
+  {
+    icon: '🤝',
+    title: 'Compounding & FIR Quashing',
+    desc: 'Settling disputes & Section 482 petitions',
+    prompt: 'Can this criminal offense be settled out of court? Explain the procedure for compounding under Section 320 or filing an FIR quashing petition before the High Court.',
+  },
+];
 
 export default function Sidebar({
   sessions = [],
@@ -7,6 +34,7 @@ export default function Sidebar({
   onSelectSession,
   onNewSession,
   onDeleteSession,
+  onSelectPlaybook,
 }) {
   const { user, isAuthenticated, isGuest, setIsAuthModalOpen, logout } = useAuth();
 
@@ -20,7 +48,7 @@ export default function Sidebar({
           </div>
           <div>
             <h2 className="text-xl font-black text-gold tracking-widest leading-none">SAUL</h2>
-            <p className="text-[11px] text-slate-400 mt-0.5 tracking-wide">LEGAL STRATEGIST AI</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 tracking-wide">CRIMINAL DEFENSE STRATEGIST</p>
           </div>
         </div>
       </div>
@@ -72,7 +100,7 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* ── New Chat / Consultation Button ─────────────────── */}
+      {/* ── New Consultation Action Button ─────────────────── */}
       <div className="px-4 py-2">
         <button
           onClick={onNewSession}
@@ -95,9 +123,9 @@ export default function Sidebar({
           </div>
 
           {sessions.length === 0 ? (
-            <div className="px-3 py-4 text-center border border-dashed border-white/5 rounded-xl">
-              <p className="text-xs text-slate-500">No previous consultations</p>
-              <p className="text-[11px] text-slate-600 mt-1">Your conversations will appear here</p>
+            <div className="px-3 py-3 text-center border border-dashed border-white/5 rounded-xl">
+              <p className="text-xs text-slate-500">No active cases</p>
+              <p className="text-[10px] text-slate-600 mt-0.5">Start a chat or select a strategy below</p>
             </div>
           ) : (
             <div className="space-y-1">
@@ -135,65 +163,48 @@ export default function Sidebar({
           )}
         </section>
 
-        {/* Section 2: Active Legal Statutes & Grounding */}
+        {/* Section 2: Defense Playbooks (1-Click Tactical Legal Guides) */}
         <section className="pt-2 border-t border-white/5">
           <div className="flex items-center gap-2 mb-2 px-1">
-            <BookOpen className="w-3.5 h-3.5 text-slate-500" />
-            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">
-              Grounding Corpus
+            <Compass className="w-3.5 h-3.5 text-gold" />
+            <h3 className="text-[11px] font-semibold text-slate-300 uppercase tracking-widest">
+              Defense Playbooks
             </h3>
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-dark-card border border-white/5">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center text-xs">
-                  ⚖️
+            {QUICK_PLAYBOOKS.map((pb, idx) => (
+              <button
+                key={idx}
+                onClick={() => onSelectPlaybook?.(pb.prompt)}
+                className="w-full text-left p-2.5 rounded-xl bg-dark-card/60 hover:bg-dark-card border border-white/5 hover:border-gold/30 transition-all group"
+              >
+                <div className="flex items-start gap-2.5">
+                  <span className="text-base flex-shrink-0 mt-0.5">{pb.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-slate-200 group-hover:text-gold transition-colors">
+                      {pb.title}
+                    </p>
+                    <p className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">
+                      {pb.desc}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-slate-200">Indian Penal Code (IPC)</p>
-                  <p className="text-[10px] text-slate-500">Substantive Penal Law</p>
-                </div>
-              </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950/40 text-emerald-400 border border-emerald-800/40 font-mono">
-                Indexed
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-dark-card border border-white/5">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center text-xs">
-                  📜
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-slate-200">Bharatiya Nyaya Sanhita</p>
-                  <p className="text-[10px] text-slate-500">BNS Criminal Provisions</p>
-                </div>
-              </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950/40 text-emerald-400 border border-emerald-800/40 font-mono">
-                Indexed
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-dark-card border border-white/5">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center text-xs">
-                  🛡️
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-slate-200">CrPC / BNSS Procedure</p>
-                  <p className="text-[10px] text-slate-500">Bail, Remand & Notices</p>
-                </div>
-              </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950/40 text-emerald-400 border border-emerald-800/40 font-mono">
-                Indexed
-              </span>
-            </div>
+              </button>
+            ))}
           </div>
+        </section>
 
-          <div className="mt-3 flex items-center gap-2 px-2 py-1.5 rounded-lg bg-emerald-950/20 border border-emerald-900/30 text-emerald-400 text-[11px]">
-            <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>Pinecone Vector Store: Online & Grounded</span>
+        {/* Section 3: Evidence Submission Tips */}
+        <section className="pt-2 border-t border-white/5">
+          <div className="p-3 rounded-2xl bg-gold/5 border border-gold/20">
+            <div className="flex items-center gap-2 text-gold text-xs font-bold mb-1.5">
+              <Camera className="w-3.5 h-3.5" />
+              <span>Evidence Analysis Mode</span>
+            </div>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              Attach or paste (Ctrl+V) photos of FIR copies, notices, or WhatsApp chats for forensic legal analysis.
+            </p>
           </div>
         </section>
       </div>

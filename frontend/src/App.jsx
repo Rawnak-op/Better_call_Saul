@@ -24,6 +24,11 @@ function AppContent() {
   const { isAuthModalOpen, setIsAuthModalOpen, user, isGuest } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const handleSelectPlaybook = (prompt) => {
+    sendMessage(prompt);
+    setSidebarOpen(false);
+  };
+
   return (
     <div className="flex h-screen bg-dark text-slate-100 overflow-hidden">
       {/* ── Mobile backdrop ──────────────────────────────────── */}
@@ -55,6 +60,7 @@ function AppContent() {
             setSidebarOpen(false);
           }}
           onDeleteSession={deleteSession}
+          onSelectPlaybook={handleSelectPlaybook}
         />
       </div>
 
