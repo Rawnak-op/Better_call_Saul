@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -23,6 +23,12 @@ function AppContent() {
 
   const { isAuthModalOpen, setIsAuthModalOpen } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Silently pre-warm the backend container the moment the user opens the page
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    fetch(`${apiUrl}/`, { method: 'GET' }).catch(() => {});
+  }, []);
 
   const handleSelectPlaybook = (prompt) => {
     sendMessage(prompt);
