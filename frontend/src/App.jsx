@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Scale, Menu, X, LogIn } from 'lucide-react';
+import { X } from 'lucide-react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { useChat } from './hooks/useChat';
@@ -21,7 +21,7 @@ function AppContent() {
     deleteSession,
   } = useChat();
 
-  const { isAuthModalOpen, setIsAuthModalOpen, user, isGuest } = useAuth();
+  const { isAuthModalOpen, setIsAuthModalOpen } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleSelectPlaybook = (prompt) => {
@@ -30,7 +30,7 @@ function AppContent() {
   };
 
   return (
-    <div className="flex h-screen bg-dark text-slate-100 overflow-hidden">
+    <div className="flex h-screen h-[100dvh] bg-dark text-slate-100 overflow-hidden">
       {/* ── Mobile backdrop ──────────────────────────────────── */}
       {sidebarOpen && (
         <div
@@ -66,41 +66,14 @@ function AppContent() {
 
       {/* ── Main chat panel ───────────────────────────────────── */}
       <main className="flex-1 flex flex-col min-w-0 h-full">
-        {/* Mobile header with sidebar toggle & sign in */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-dark-surface md:hidden flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg text-slate-400 hover:text-gold hover:bg-gold/10 transition-all"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full overflow-hidden border border-gold/40 flex-shrink-0 bg-dark">
-                <img src="/saul-avatar.jpg" alt="Saul" className="w-full h-full object-cover" />
-              </div>
-              <span className="font-bold text-gold tracking-wider">SAUL</span>
-            </div>
-          </div>
-
-          {(!user || isGuest) && (
-            <button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 hover:bg-gold/20 text-gold text-xs font-semibold rounded-lg border border-gold/30 transition-all"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>Sign In</span>
-            </button>
-          )}
-        </div>
-
-        {/* Chat window fills remaining height */}
+        {/* Chat window fills full height */}
         <div className="flex-1 min-h-0">
           <ChatWindow
             messages={messages}
             isLoading={isLoading}
             sendMessage={sendMessage}
             clearChat={startNewChat}
+            onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
           />
         </div>
       </main>

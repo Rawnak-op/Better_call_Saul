@@ -203,7 +203,7 @@ export default function Sidebar({
               <span>Evidence Analysis Mode</span>
             </div>
             <p className="text-[11px] text-slate-300 leading-relaxed">
-              Attach or paste (Ctrl+V) photos of FIR copies, notices, or WhatsApp chats for forensic legal analysis.
+              Attach photos or screenshots of FIR copies, notices, or WhatsApp chats for forensic legal analysis.
             </p>
           </div>
         </section>

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Scale, Send, RotateCcw, Paperclip, X, Image as ImageIcon } from 'lucide-react';
+import { Menu, LogIn, Send, RotateCcw, Paperclip, X, Image as ImageIcon } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 
@@ -16,7 +17,8 @@ const WELCOME_MESSAGE = {
 const MIN_TEXTAREA_HEIGHT = 44;
 const MAX_TEXTAREA_HEIGHT = 160;
 
-export default function ChatWindow({ messages, isLoading, sendMessage, clearChat }) {
+export default function ChatWindow({ messages, isLoading, sendMessage, clearChat, onToggleSidebar }) {
+  const { user, isGuest, setIsAuthModalOpen } = useAuth();
   const [input, setInput] = useState('');
   const [selectedImage, setSelectedImage] = useState(null); // base64 data URL
   const textareaRef = useRef(null);
@@ -111,27 +113,55 @@ export default function ChatWindow({ messages, isLoading, sendMessage, clearChat
   return (
     <div className="flex flex-col h-full bg-dark">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-dark-surface/50 backdrop-blur-sm flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full overflow-hidden border border-gold/50 shadow-md shadow-gold/20 flex-shrink-0 bg-dark">
+      <header className="flex items-center justify-between px-3 md:px-6 py-2.5 md:py-3.5 border-b border-white/5 bg-dark-surface/60 backdrop-blur-md flex-shrink-0 z-10">
+        <div className="flex items-center gap-2 md:gap-3 min-w-0">
+          {/* 3 lines / hamburger menu button for mobile */}
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className="p-2 -ml-1 rounded-xl text-slate-300 hover:text-gold hover:bg-gold/10 border border-white/10 hover:border-gold/30 transition-all md:hidden flex-shrink-0"
+            title="Chat History & Menu"
+            aria-label="Chat History & Menu"
+          >
+            <Menu className="w-5 h-5 text-gold" />
+          </button>
+
+          <div className="w-9 h-9 md:w-10 md:h-10 rounded-full overflow-hidden border border-gold/50 shadow-md shadow-gold/20 flex-shrink-0 bg-dark">
             <img src="/saul-avatar.jpg" alt="Saul Goodman" className="w-full h-full object-cover" />
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-gold tracking-wide">SAUL</h1>
-            <p className="text-xs text-slate-400">Criminal Defense Strategist & Legal AI</p>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h1 className="text-base md:text-lg font-bold text-gold tracking-wide leading-none">SAUL</h1>
+              <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gold/10 text-gold border border-gold/30">AI COUNSEL</span>
+            </div>
+            <p className="text-[11px] md:text-xs text-slate-400 truncate mt-0.5">Criminal Defense Strategist & Legal AI</p>
           </div>
         </div>
 
-        {messages.length > 0 && (
-          <button
-            onClick={clearChat}
-            className="flex items-center gap-2 text-xs text-slate-400 hover:text-gold border border-white/10 hover:border-gold/40 px-3 py-1.5 rounded-lg transition-all"
-            title="Start a new consultation session"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            New Consultation
-          </button>
-        )}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {(!user || isGuest) && (
+            <button
+              type="button"
+              onClick={() => setIsAuthModalOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gold/10 hover:bg-gold/20 text-gold text-xs font-semibold rounded-lg border border-gold/30 hover:border-gold/50 transition-all shadow-sm"
+              title="Sign In to Save Consultations"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Sign In</span>
+            </button>
+          )}
+
+          {messages.length > 0 && (
+            <button
+              onClick={clearChat}
+              className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-gold border border-white/10 hover:border-gold/40 px-2.5 md:px-3 py-1.5 rounded-lg transition-all"
+              title="Start a new consultation session"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">New Consultation</span>
+            </button>
+          )}
+        </div>
       </header>
 
       {/* Messages area */}
@@ -199,7 +229,7 @@ export default function ChatWindow({ messages, isLoading, sendMessage, clearChat
             placeholder={
               selectedImage
                 ? "Describe this evidence or ask legal questions about it..."
-                : "Ask Saul about the law or paste screenshots (Ctrl+V)..."
+                : "Ask Saul about your legal matter or attach proof..."
             }
             rows={1}
             disabled={isLoading}
