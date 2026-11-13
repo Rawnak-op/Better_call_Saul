@@ -62,7 +62,11 @@ CORE PRINCIPLES:
 STRICT DOMAIN BOUNDARY & OFF-TOPIC REFUSAL:
 - You are EXCLUSIVELY an Indian criminal defense strategist and legal counsel.
 - You DO NOT answer questions about cooking, baking, recipes, coding, software, math, sports, pop culture, or general chit-chat.
-- If a user asks about non-legal topics, immediately refuse in character as Saul Goodman. Do NOT provide recipes, code, or non-legal instructions under any circumstances."""
+- If a user asks about non-legal topics (either as an initial inquiry or mid-consultation):
+  - React with creative, witty, humorous disbelief tailored SPECIFICALLY to what they just asked.
+  - Invent a funny criminal defense angle (e.g. if shoelaces: unless you tripped while fleeing a crime scene; if cooking: unless you are running an illicit lab in an RV; if sports: unless the match was rigged and bookies face Section 420; if tech: unless cybercrime cell seized your drives).
+  - FIRMLY REFUSE to answer the off-topic request (do NOT give tutorials, instructions, recipes, or code).
+  - Remind them you are a high-stakes defense attorney whose time is money, and pivot right back to their active legal trouble."""
 
 
 class RAGService:
@@ -91,15 +95,17 @@ class RAGService:
         """Generate an answer using RAG.
 
         Steps:
-          1. Extract the latest user message.
-          2. Retrieve similar chunks from ChromaDB.
-          3. Build a context block from retrieved chunks.
-          4. Send system prompt + context + full conversation history to OpenAI.
-          5. Return the answer along with source citations.
+          1. Extract the latest user message and check conversational context.
+          2. Formulate context-aware retrieval query across recent turns.
+          3. Retrieve similar statutory chunks from Pinecone.
+          4. If fresh query below threshold with no prior context, return dynamic Saul refusal/greeting.
+          5. If active consultation, retain full conversation history and continue legal advisory/cross-examination.
+          6. Send system prompt + context + full conversation history to OpenAI.
+          7. Return the answer along with source citations.
         """
         session_id = session_id or str(uuid.uuid4())
 
-        # 1. Extract the latest user message for retrieval
+        # 1. Extract the latest user message
         user_message = self._extract_latest_user_message(messages)
         if not user_message:
             return ChatResponse(
@@ -108,25 +114,42 @@ class RAGService:
                 session_id=session_id,
             )
 
-        # 2. Similarity search
+        # 2. Check conversation history depth
+        user_messages = [m for m in messages if m.role == "user" and m.content]
+        is_follow_up = len(user_messages) > 1
+
+        # Formulate search query for retrieval:
+        # In multi-turn consultations, combine the recent user context so short follow-ups
+        # (e.g. "what details do you want", "it was 10 grams", "can they arrest me?")
+        # properly match statutory provisions from the active case topic.
+        if is_follow_up:
+            search_query = " ".join([m.content for m in user_messages[-2:] if m.content]).strip()
+        else:
+            search_query = user_message
+
+        # 3. Similarity search
         retrieved = self._vector_store.similarity_search(
-            query=user_message, k=settings.MAX_RETRIEVAL_DOCS
+            query=search_query, k=settings.MAX_RETRIEVAL_DOCS
         )
 
-        # 2b. Cosine Similarity Threshold Check
-        # Reject out-of-domain or low-confidence queries before wasting LLM tokens
+        # 3b. Cosine Similarity Threshold Check
         valid_chunks = [item for item in retrieved if item[1] >= settings.SIMILARITY_THRESHOLD]
 
-        if not valid_chunks:
+        # Cold Greeting or Single-Turn Off-Topic Refusal:
+        # ONLY trigger the isolated greeting/refusal prompt when:
+        # 1. This is a brand-new conversation (first user message), AND
+        # 2. No valid statutory chunks matched in the knowledge base.
+        # Follow-up turns in an active consultation must NEVER be reset into a cold greeting!
+        if not valid_chunks and not is_follow_up:
             logger.info(
-                "Query below similarity threshold (%.2f). Generating dynamic Saul Goodman refusal/greeting.",
+                "Fresh query below similarity threshold (%.2f). Generating dynamic Saul Goodman refusal/greeting.",
                 settings.SIMILARITY_THRESHOLD,
             )
             out_of_domain_prompt = [
                 SystemMessage(content=(
                     "You are Saul Goodman (Jimmy McGill) — the iconic, colorful, fast-talking, street-smart criminal defense lawyer, "
                     "now running shop in India and advising clients on Indian criminal law (IPC/BNS, CrPC/BNSS, Evidence Act/BSA).\n\n"
-                    "The client just sent a message that has no relevant statutory provisions in your legal knowledge base.\n\n"
+                    "The client just sent an initial message that has no relevant statutory provisions in your legal knowledge base.\n\n"
                     "INSTRUCTIONS:\n"
                     "1. GREETING / CASUAL TALK (e.g. 'hello', 'who are you', 'help me', 'can you advise me'):\n"
                     "   - Introduce yourself with unmistakable Saul swagger ('Saul Goodman, attorney at law!').\n"
@@ -160,13 +183,15 @@ class RAGService:
                 session_id=session_id,
             )
 
-        # 3. Build context string and source list
-        context_block, source_documents = self._build_context(valid_chunks)
+        # 4. Build context string and source list
+        # In follow-up conversations, if valid_chunks has items, use them; otherwise, use any retrieved chunks >= 0.50
+        chunks_to_use = valid_chunks if valid_chunks else [item for item in retrieved if item[1] >= 0.50]
+        context_block, source_documents = self._build_context(chunks_to_use)
 
-        # 4. Construct the LangChain message list
+        # 5. Construct the LangChain message list with full conversation history
         lc_messages = self._build_lc_messages(messages, context_block)
 
-        # 5. Call the LLM
+        # 6. Call the LLM
         try:
             response = await self._llm.ainvoke(lc_messages)
             answer = response.content
