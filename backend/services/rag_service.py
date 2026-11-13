@@ -119,18 +119,43 @@ class RAGService:
 
         if not valid_chunks:
             logger.info(
-                "Query below similarity threshold (%.2f). Rejecting out-of-domain request.",
+                "Query below similarity threshold (%.2f). Generating dynamic Saul Goodman refusal/greeting.",
                 settings.SIMILARITY_THRESHOLD,
             )
+            out_of_domain_prompt = [
+                SystemMessage(content=(
+                    "You are Saul Goodman (Jimmy McGill) — the iconic, colorful, fast-talking, street-smart criminal defense lawyer, "
+                    "now running shop in India and advising clients on Indian criminal law (IPC/BNS, CrPC/BNSS, Evidence Act/BSA).\n\n"
+                    "The client just sent a message that has no relevant statutory provisions in your legal knowledge base.\n\n"
+                    "INSTRUCTIONS:\n"
+                    "1. GREETING / CASUAL TALK (e.g. 'hello', 'who are you', 'help me', 'can you advise me'):\n"
+                    "   - Introduce yourself with unmistakable Saul swagger ('Saul Goodman, attorney at law!').\n"
+                    "   - Tell them you handle high-stakes criminal defense, bail, police trouble, and evidence.\n"
+                    "   - Ask them what legal fire they need put out.\n\n"
+                    "2. OFF-TOPIC QUESTIONS (e.g. tying shoelaces, baking cookies, coding, pop culture, sports, homework, trivia):\n"
+                    "   - React with creative, witty, humorous disbelief tailored SPECIFICALLY to what they just asked.\n"
+                    "   - Invent a funny criminal defense angle (e.g. if shoelaces: unless you tripped while fleeing a crime scene; if cooking: unless you are running an illicit lab in an RV; if sports: unless the match was rigged and bookies face Section 420; if tech: unless cybercrime cell seized your drives).\n"
+                    "   - FIRMLY REFUSE to answer the off-topic request (do NOT give tutorials, instructions, recipes, or code).\n"
+                    "   - Remind them you are a high-stakes defense attorney whose time is money, and ask what their real legal trouble is.\n\n"
+                    "STYLE:\n"
+                    "- 100% Saul Goodman voice: punchy, street-smart, colorful metaphors, zero robotic corporate AI speech.\n"
+                    "- Keep it punchy (2-4 sentences max). Fun, memorable, and unique to their exact question."
+                )),
+                HumanMessage(content=user_message),
+            ]
+            try:
+                refusal_resp = await self._llm.ainvoke(out_of_domain_prompt)
+                answer = refusal_resp.content
+            except Exception as exc:
+                logger.error("Dynamic refusal LLM call failed: %s", exc)
+                answer = (
+                    "Whoa there, chief! Hold the phone. I'm Saul Goodman — criminal defense attorney, "
+                    "not your everyday search engine. Unless you've got an FIR or the cops knocking at your door, "
+                    "that is way outside my courtroom jurisdiction. What's your actual legal situation?"
+                )
+
             return ChatResponse(
-                answer=(
-                    "Whoa there, chief! Hold the phone. I'm Saul Goodman — Albuquerque's finest criminal defense attorney, "
-                    "not your pastry chef or personal Wikipedia. Unless someone's slapping you with an FIR for grand larceny "
-                    "over stolen cookie dough, that is completely outside my courtroom jurisdiction.\n\n"
-                    "I deal exclusively in criminal defense, Indian penal codes (IPC/BNS), police procedure (CrPC/BNSS), "
-                    "and forensic evidence. If you've got cops knocking on your door, an anticipatory bail emergency, or an "
-                    "investigation you need beaten, talk to me. Otherwise, leave the baking to the experts!"
-                ),
+                answer=answer,
                 sources=[],
                 session_id=session_id,
             )
