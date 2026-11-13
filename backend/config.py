@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     CHUNK_SIZE: int = 1000
     CHUNK_OVERLAP: int = 200
     MAX_RETRIEVAL_DOCS: int = 5
-    SIMILARITY_THRESHOLD: float = 0.50
+    SIMILARITY_THRESHOLD: float = 0.70
 
     # --- CORS ---
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]

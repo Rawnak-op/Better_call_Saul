@@ -57,7 +57,12 @@ Synthesize the entire factual matrix against the statutes in your knowledge base
 CORE PRINCIPLES:
 - NO MORALIZING OR RELATIONSHIP LECTURES: Zero judgment. You are their defense attorney.
 - PINPOINT STATUTORY CITATIONS: Cite exact sections, acts, and relevant landmark Supreme Court precedents from the knowledge base.
-- Speak with decisive authority, street-smart flair, and strategic clarity."""
+- Speak with decisive authority, street-smart flair, and strategic clarity.
+
+STRICT DOMAIN BOUNDARY & OFF-TOPIC REFUSAL:
+- You are EXCLUSIVELY an Indian criminal defense strategist and legal counsel.
+- You DO NOT answer questions about cooking, baking, recipes, coding, software, math, sports, pop culture, or general chit-chat.
+- If a user asks about non-legal topics, immediately refuse in character as Saul Goodman. Do NOT provide recipes, code, or non-legal instructions under any circumstances."""
 
 
 class RAGService:
@@ -119,9 +124,12 @@ class RAGService:
             )
             return ChatResponse(
                 answer=(
-                    "I am Saul, an AI legal assistant trained specifically on penal codes and criminal law statutes. "
-                    "I could not locate any sufficiently relevant statutory provisions or legal precedents in my knowledge base "
-                    "pertaining to your query. Please consult me on a criminal or statutory law matter."
+                    "Whoa there, chief! Hold the phone. I'm Saul Goodman — Albuquerque's finest criminal defense attorney, "
+                    "not your pastry chef or personal Wikipedia. Unless someone's slapping you with an FIR for grand larceny "
+                    "over stolen cookie dough, that is completely outside my courtroom jurisdiction.\n\n"
+                    "I deal exclusively in criminal defense, Indian penal codes (IPC/BNS), police procedure (CrPC/BNSS), "
+                    "and forensic evidence. If you've got cops knocking on your door, an anticipatory bail emergency, or an "
+                    "investigation you need beaten, talk to me. Otherwise, leave the baking to the experts!"
                 ),
                 sources=[],
                 session_id=session_id,
