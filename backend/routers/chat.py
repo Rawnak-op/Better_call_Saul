@@ -3,10 +3,11 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
-from models.schemas import ChatRequest, ChatResponse, HealthResponse
+from models.schemas import ChatRequest, ChatResponse, HealthResponse, TTSRequest
 from services.rag_service import RAGService
+from services.tts_service import TTSService
 from services.vector_store import VectorStoreService
 
 logger = logging.getLogger(__name__)
@@ -28,9 +29,44 @@ def get_rag_service(request: Request) -> RAGService:
     return request.app.state.rag_service
 
 
+def get_tts_service(request: Request) -> TTSService:
+    """Pull the shared TTSService from app state."""
+    return request.app.state.tts_service
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
+@router.post(
+    "/tts",
+    summary="Generate Saul Goodman voice audio",
+)
+async def tts(
+    payload: TTSRequest,
+    tts_service: TTSService = Depends(get_tts_service),
+) -> Response:
+    """Convert Saul's counsel into audio MP3 stream."""
+    if not payload.text or not payload.text.strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="text cannot be empty",
+        )
+
+    try:
+        audio_bytes = await tts_service.generate_speech(payload.text)
+        if not audio_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="No audio generated",
+            )
+        return Response(content=audio_bytes, media_type="audio/mpeg")
+    except Exception as exc:
+        logger.exception("TTS generation error: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Speech synthesis failed: {exc}",
+        ) from exc
 
 @router.post(
     "/chat",

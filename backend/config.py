@@ -44,6 +44,11 @@ class Settings(BaseSettings):
     PINECONE_INDEX_NAME: str = "saul-legal-index"
     DOCUMENTS_DIR: str = str(BASE_DIR / "data" / "documents")
 
+    # --- Voice / TTS ---
+    ELEVENLABS_API_KEY: str = ""
+    ELEVENLABS_VOICE_ID: str = ""
+    OPENAI_TTS_VOICE: str = "onyx"  # punchy, authoritative criminal defense lawyer voice
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, value: Any) -> list[str]:

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { api } from '../api/client';
 
 /**
  * useVoice — hook providing both Speech-to-Text (Microphone input)
@@ -13,11 +14,22 @@ export function useVoice() {
   // ── Text-to-Speech (Voice playback) ───────────────────────────────
   const [speakingId, setSpeakingId] = useState(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
     setSpeechSupported(Boolean(SpeechRecognition));
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
   }, []);
 
   /**
@@ -91,25 +103,30 @@ export function useVoice() {
   }, []);
 
   /**
-   * Play Saul's answer aloud as a voice message using SpeechSynthesis.
+   * Stop speaking any active audio.
    */
-  const speak = useCallback((text, messageId) => {
-    if (!('speechSynthesis' in window)) {
-      alert('Text-to-speech is not supported in this browser.');
-      return;
+  const stopSpeaking = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
     }
-
-    // If currently speaking this message, toggle stop
-    if (speakingId === messageId) {
+    if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+    }
+    setSpeakingId(null);
+    setIsSpeaking(false);
+  }, []);
+
+  /**
+   * Fallback browser SpeechSynthesis if backend audio is unavailable.
+   */
+  const fallbackSpeechSynthesis = useCallback((text, messageId) => {
+    if (!('speechSynthesis' in window)) {
       setSpeakingId(null);
       setIsSpeaking(false);
       return;
     }
 
-    window.speechSynthesis.cancel();
-
-    // Clean markdown formatting for clean, natural speech
     const cleanText = text
       .replace(/[*#_`~>[\]]/g, '')
       .replace(/\(.*?\)/g, '')
@@ -117,13 +134,16 @@ export function useVoice() {
       .replace(/\n+/g, '. ')
       .trim();
 
-    if (!cleanText) return;
+    if (!cleanText) {
+      setSpeakingId(null);
+      setIsSpeaking(false);
+      return;
+    }
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 1.05; // Fast-talking Saul McGill cadence
+    utterance.rate = 1.05;
     utterance.pitch = 0.95;
 
-    // Pick an English voice
     const voices = window.speechSynthesis.getVoices();
     const preferredVoice =
       voices.find(
@@ -133,18 +153,12 @@ export function useVoice() {
             v.name.includes('Guy') ||
             v.name.includes('Male') ||
             v.name.includes('David') ||
-            v.name.includes('George') ||
             v.name.includes('Google US English'))
       ) || voices.find((v) => v.lang.startsWith('en'));
 
     if (preferredVoice) {
       utterance.voice = preferredVoice;
     }
-
-    utterance.onstart = () => {
-      setSpeakingId(messageId);
-      setIsSpeaking(true);
-    };
 
     utterance.onend = () => {
       setSpeakingId(null);
@@ -157,18 +171,48 @@ export function useVoice() {
     };
 
     window.speechSynthesis.speak(utterance);
-  }, [speakingId]);
+  }, []);
 
   /**
-   * Stop speaking any active audio.
+   * Play Saul's answer aloud with Saul Goodman neural audio stream.
    */
-  const stopSpeaking = useCallback(() => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-    setSpeakingId(null);
-    setIsSpeaking(false);
-  }, []);
+  const speak = useCallback(
+    async (text, messageId) => {
+      if (speakingId === messageId) {
+        stopSpeaking();
+        return;
+      }
+
+      stopSpeaking();
+      setSpeakingId(messageId);
+      setIsSpeaking(true);
+
+      try {
+        // Fetch high-fidelity neural audio from backend
+        const audioBlob = await api.tts(text);
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+
+        audio.onended = () => {
+          setSpeakingId(null);
+          setIsSpeaking(false);
+          audioRef.current = null;
+          URL.revokeObjectURL(audioUrl);
+        };
+
+        audio.onerror = () => {
+          fallbackSpeechSynthesis(text, messageId);
+        };
+
+        await audio.play();
+      } catch (err) {
+        console.warn('Backend TTS audio fetch failed, falling back to browser speech:', err);
+        fallbackSpeechSynthesis(text, messageId);
+      }
+    },
+    [speakingId, stopSpeaking, fallbackSpeechSynthesis]
+  );
 
   return {
     isListening,

@@ -17,6 +17,7 @@ from config import settings
 from routers import chat, documents
 from services.document_processor import DocumentProcessor
 from services.rag_service import RAGService
+from services.tts_service import TTSService
 from services.vector_store import VectorStoreService
 
 # ---------------------------------------------------------------------------
@@ -45,11 +46,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     vector_store = VectorStoreService()
     document_processor = DocumentProcessor()
     rag_service = RAGService(vector_store=vector_store)
+    tts_service = TTSService()
 
     # Attach to app state so routers can access them via Request.app.state
     app.state.vector_store = vector_store
     app.state.document_processor = document_processor
     app.state.rag_service = rag_service
+    app.state.tts_service = tts_service
 
     logger.info("🚀 Saul Legal AI Assistant is ready.")
     yield

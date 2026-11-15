@@ -48,6 +48,12 @@ class ChatResponse(BaseModel):
     session_id: str = Field(..., description="Session identifier (echoed or newly generated)")
 
 
+class TTSRequest(BaseModel):
+    """Payload for text-to-speech audio generation."""
+
+    text: str = Field(..., description="Text to convert to Saul Goodman voice audio")
+
+
 # ---------------------------------------------------------------------------
 # Document schemas
 # ---------------------------------------------------------------------------

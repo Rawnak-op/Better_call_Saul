@@ -53,6 +53,28 @@ export const api = {
   },
 
   /**
+   * Request neural speech audio from backend for Saul Goodman voice.
+   * @param {string} text
+   * @returns {Promise<Blob>}
+   */
+  tts: async (text) => {
+    const url = `${BASE_URL}/api/tts`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`TTS failed with status ${response.status}`);
+    }
+
+    return response.blob();
+  },
+
+  /**
    * Upload a document to the knowledge base.
    * Supports upload progress via XMLHttpRequest.
    * @param {File} file
