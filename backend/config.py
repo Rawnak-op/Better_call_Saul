@@ -45,6 +45,8 @@ class Settings(BaseSettings):
     DOCUMENTS_DIR: str = str(BASE_DIR / "data" / "documents")
 
     # --- Voice / TTS ---
+    FISH_AUDIO_API_KEY: str = ""
+    FISH_AUDIO_VOICE_ID: str = ""
     ELEVENLABS_API_KEY: str = ""
     ELEVENLABS_VOICE_ID: str = ""
     OPENAI_TTS_VOICE: str = "onyx"  # punchy, authoritative criminal defense lawyer voice

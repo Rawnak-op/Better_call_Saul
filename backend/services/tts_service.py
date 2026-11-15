@@ -1,8 +1,9 @@
 """Text-to-speech service for Saul Goodman voice generation.
 
 Supports:
-1. ElevenLabs custom Saul Goodman / Bob Odenkirk voice cloning (if configured)
-2. OpenAI Neural TTS (onyx/echo fast-talking lawyer voice) as immediate high-fidelity fallback
+1. Fish Audio Saul Goodman voice model (https://fish.audio)
+2. ElevenLabs custom voice cloning
+3. OpenAI Neural TTS (onyx/echo fast-talking lawyer voice) as immediate fallback
 """
 from __future__ import annotations
 
@@ -24,7 +25,8 @@ class TTSService:
     def __init__(self) -> None:
         self._openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         logger.info(
-            "TTSService initialised — ElevenLabs configured: %s, OpenAI voice: %s",
+            "TTSService initialised — FishAudio configured: %s, ElevenLabs configured: %s, OpenAI voice: %s",
+            bool(settings.FISH_AUDIO_API_KEY and settings.FISH_AUDIO_VOICE_ID),
             bool(settings.ELEVENLABS_API_KEY and settings.ELEVENLABS_VOICE_ID),
             settings.OPENAI_TTS_VOICE,
         )
@@ -51,7 +53,37 @@ class TTSService:
         if not clean_text:
             return b""
 
-        # 1. ElevenLabs Voice Clone (Exact Saul Goodman / Bob Odenkirk Voice)
+        # 1. Fish Audio (Exact free Saul Goodman voice model from fish.audio!)
+        if settings.FISH_AUDIO_API_KEY and settings.FISH_AUDIO_VOICE_ID:
+            try:
+                url = "https://api.fish.audio/v1/tts"
+                headers = {
+                    "Authorization": f"Bearer {settings.FISH_AUDIO_API_KEY}",
+                    "Content-Type": "application/json",
+                }
+                payload = {
+                    "text": clean_text,
+                    "reference_id": settings.FISH_AUDIO_VOICE_ID,
+                    "format": "mp3",
+                }
+                async with httpx.AsyncClient() as client:
+                    resp = await client.post(url, headers=headers, json=payload, timeout=45.0)
+                    if resp.status_code == 200 and resp.content:
+                        logger.info(
+                            "Fish Audio Saul Goodman voice generated successfully (%d bytes)",
+                            len(resp.content),
+                        )
+                        return resp.content
+                    else:
+                        logger.warning(
+                            "Fish Audio TTS returned HTTP %d: %s. Falling back.",
+                            resp.status_code,
+                            resp.text[:200],
+                        )
+            except Exception as exc:
+                logger.error("Fish Audio TTS call failed: %s. Falling back.", exc)
+
+        # 2. ElevenLabs Voice Clone (If configured)
         if settings.ELEVENLABS_API_KEY and settings.ELEVENLABS_VOICE_ID:
             try:
                 url = f"https://api.elevenlabs.io/v1/text-to-speech/{settings.ELEVENLABS_VOICE_ID}"
@@ -86,7 +118,7 @@ class TTSService:
             except Exception as exc:
                 logger.error("ElevenLabs TTS call failed: %s. Falling back to OpenAI TTS.", exc)
 
-        # 2. OpenAI Neural Studio TTS Fallback (Instant, studio-grade lawyer voice)
+        # 3. OpenAI Neural Studio TTS Fallback (Instant, studio-grade lawyer voice)
         try:
             logger.info("Generating audio via OpenAI TTS (voice=%s)", settings.OPENAI_TTS_VOICE)
             response = await self._openai_client.audio.speech.create(
@@ -98,6 +130,9 @@ class TTSService:
             audio_bytes = response.content
             logger.info("OpenAI TTS audio generated successfully (%d bytes)", len(audio_bytes))
             return audio_bytes
+        except Exception as exc:
+            logger.error("OpenAI TTS generation failed: %s", exc)
+            raise RuntimeError(f"Text-to-speech audio generation failed: {exc}") from exc
         except Exception as exc:
             logger.error("OpenAI TTS generation failed: %s", exc)
             raise RuntimeError(f"Text-to-speech audio generation failed: {exc}") from exc
