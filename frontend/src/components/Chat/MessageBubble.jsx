@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Volume2, VolumeX, Square } from 'lucide-react';
+import { Volume2, VolumeX, Square, Loader2 } from 'lucide-react';
 
 /**
  * Formats a Date object into a human-readable time string (e.g. "2:34 PM").
@@ -54,7 +54,7 @@ function UserBubble({ message }) {
  * SaulBubble — left-aligned dark card with SAUL avatar for assistant messages.
  * Includes Voice Message playback and no legal citations button.
  */
-function SaulBubble({ message, onSpeak, isSpeakingThis }) {
+function SaulBubble({ message, onSpeak, isSpeakingThis, isLoadingThis }) {
   return (
     <div className="flex items-start gap-3 group">
       {/* Avatar */}
@@ -82,13 +82,26 @@ function SaulBubble({ message, onSpeak, isSpeakingThis }) {
                 type="button"
                 onClick={() => onSpeak && onSpeak(message.content, message.id)}
                 className={`inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-xl border transition-all ${
-                  isSpeakingThis
+                  isLoadingThis
+                    ? 'bg-gold/15 text-gold border-gold/40 shadow-sm shadow-gold/10'
+                    : isSpeakingThis
                     ? 'bg-gold/20 text-gold border-gold/40 shadow-sm shadow-gold/20'
                     : 'bg-white/5 text-slate-300 border-white/10 hover:border-gold/30 hover:text-gold'
                 }`}
-                title={isSpeakingThis ? 'Stop voice message' : 'Listen to Saul read this message aloud'}
+                title={
+                  isLoadingThis
+                    ? 'Loading voice note...'
+                    : isSpeakingThis
+                    ? 'Stop voice message'
+                    : 'Listen to Saul read this message aloud'
+                }
               >
-                {isSpeakingThis ? (
+                {isLoadingThis ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 text-gold animate-spin" />
+                    <span className="italic">Saul is preparing voice note…</span>
+                  </>
+                ) : isSpeakingThis ? (
                   <>
                     <Square className="w-3.5 h-3.5 text-gold fill-gold" />
                     <span>Stop Voice Note</span>
@@ -119,7 +132,7 @@ function SaulBubble({ message, onSpeak, isSpeakingThis }) {
   );
 }
 
-export default function MessageBubble({ message, onSpeak, speakingId }) {
+export default function MessageBubble({ message, onSpeak, speakingId, loadingId }) {
   if (message.role === 'user') {
     return <UserBubble message={message} />;
   }
@@ -128,6 +141,7 @@ export default function MessageBubble({ message, onSpeak, speakingId }) {
       message={message}
       onSpeak={onSpeak}
       isSpeakingThis={speakingId === message.id}
+      isLoadingThis={loadingId === message.id}
     />
   );
 }

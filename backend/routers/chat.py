@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi.responses import StreamingResponse
 
 from models.schemas import ChatRequest, ChatResponse, HealthResponse, TTSRequest
 from services.rag_service import RAGService
@@ -45,8 +46,8 @@ def get_tts_service(request: Request) -> TTSService:
 async def tts(
     payload: TTSRequest,
     tts_service: TTSService = Depends(get_tts_service),
-) -> Response:
-    """Convert Saul's counsel into audio MP3 stream."""
+) -> StreamingResponse:
+    """Convert Saul's counsel into streaming audio MP3."""
     if not payload.text or not payload.text.strip():
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -54,13 +55,14 @@ async def tts(
         )
 
     try:
-        audio_bytes = await tts_service.generate_speech(payload.text)
-        if not audio_bytes:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="No audio generated",
-            )
-        return Response(content=audio_bytes, media_type="audio/mpeg")
+        return StreamingResponse(
+            tts_service.stream_speech(payload.text),
+            media_type="audio/mpeg",
+            headers={
+                "Accept-Ranges": "bytes",
+                "Cache-Control": "public, max-age=3600",
+            },
+        )
     except Exception as exc:
         logger.exception("TTS generation error: %s", exc)
         raise HTTPException(

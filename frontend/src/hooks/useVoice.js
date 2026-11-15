@@ -3,7 +3,7 @@ import { api } from '../api/client';
 
 /**
  * useVoice — hook providing both Speech-to-Text (Microphone input)
- * and Text-to-Speech (Saul voice playback).
+ * and Text-to-Speech (Saul voice playback with streaming & caching).
  */
 export function useVoice() {
   // ── Speech-to-Text (Voice input) ──────────────────────────────────
@@ -13,8 +13,10 @@ export function useVoice() {
 
   // ── Text-to-Speech (Voice playback) ───────────────────────────────
   const [speakingId, setSpeakingId] = useState(null);
+  const [loadingId, setLoadingId] = useState(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef(null);
+  const audioCache = useRef(new Map());
 
   useEffect(() => {
     const SpeechRecognition =
@@ -114,6 +116,7 @@ export function useVoice() {
       window.speechSynthesis.cancel();
     }
     setSpeakingId(null);
+    setLoadingId(null);
     setIsSpeaking(false);
   }, []);
 
@@ -123,6 +126,7 @@ export function useVoice() {
   const fallbackSpeechSynthesis = useCallback((text, messageId) => {
     if (!('speechSynthesis' in window)) {
       setSpeakingId(null);
+      setLoadingId(null);
       setIsSpeaking(false);
       return;
     }
@@ -136,6 +140,7 @@ export function useVoice() {
 
     if (!cleanText) {
       setSpeakingId(null);
+      setLoadingId(null);
       setIsSpeaking(false);
       return;
     }
@@ -160,6 +165,12 @@ export function useVoice() {
       utterance.voice = preferredVoice;
     }
 
+    utterance.onstart = () => {
+      setLoadingId(null);
+      setSpeakingId(messageId);
+      setIsSpeaking(true);
+    };
+
     utterance.onend = () => {
       setSpeakingId(null);
       setIsSpeaking(false);
@@ -167,6 +178,7 @@ export function useVoice() {
 
     utterance.onerror = () => {
       setSpeakingId(null);
+      setLoadingId(null);
       setIsSpeaking(false);
     };
 
@@ -178,19 +190,41 @@ export function useVoice() {
    */
   const speak = useCallback(
     async (text, messageId) => {
-      if (speakingId === messageId) {
+      // Toggle stop if already playing or loading this message
+      if (speakingId === messageId || loadingId === messageId) {
         stopSpeaking();
         return;
       }
 
       stopSpeaking();
-      setSpeakingId(messageId);
-      setIsSpeaking(true);
+
+      // Check client-side audio cache for instantaneous replay (0ms delay)
+      if (audioCache.current.has(messageId)) {
+        const cachedUrl = audioCache.current.get(messageId);
+        const audio = new Audio(cachedUrl);
+        audioRef.current = audio;
+
+        audio.onended = () => {
+          setSpeakingId(null);
+          setIsSpeaking(false);
+          audioRef.current = null;
+        };
+
+        setSpeakingId(messageId);
+        setIsSpeaking(true);
+        audio.play().catch(() => {});
+        return;
+      }
+
+      // Show immediate loading indicator on the button
+      setLoadingId(messageId);
 
       try {
-        // Fetch high-fidelity neural audio from backend
+        // Fetch neural audio from backend
         const audioBlob = await api.tts(text);
         const audioUrl = URL.createObjectURL(audioBlob);
+        audioCache.current.set(messageId, audioUrl);
+
         const audio = new Audio(audioUrl);
         audioRef.current = audio;
 
@@ -198,20 +232,28 @@ export function useVoice() {
           setSpeakingId(null);
           setIsSpeaking(false);
           audioRef.current = null;
-          URL.revokeObjectURL(audioUrl);
         };
 
         audio.onerror = () => {
+          setLoadingId(null);
           fallbackSpeechSynthesis(text, messageId);
+        };
+
+        // When the sound actually begins playing, switch state to speaking
+        audio.onplay = () => {
+          setLoadingId(null);
+          setSpeakingId(messageId);
+          setIsSpeaking(true);
         };
 
         await audio.play();
       } catch (err) {
         console.warn('Backend TTS audio fetch failed, falling back to browser speech:', err);
+        setLoadingId(null);
         fallbackSpeechSynthesis(text, messageId);
       }
     },
-    [speakingId, stopSpeaking, fallbackSpeechSynthesis]
+    [speakingId, loadingId, stopSpeaking, fallbackSpeechSynthesis]
   );
 
   return {
@@ -222,6 +264,7 @@ export function useVoice() {
     speak,
     stopSpeaking,
     speakingId,
+    loadingId,
     isSpeaking,
   };
 }

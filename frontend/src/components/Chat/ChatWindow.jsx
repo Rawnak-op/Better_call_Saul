@@ -34,6 +34,7 @@ export default function ChatWindow({ messages, isLoading, sendMessage, clearChat
     speak,
     stopSpeaking,
     speakingId,
+    loadingId,
   } = useVoice();
   const [voiceError, setVoiceError] = useState(null);
 
@@ -205,6 +206,7 @@ export default function ChatWindow({ messages, isLoading, sendMessage, clearChat
             message={msg}
             onSpeak={speak}
             speakingId={speakingId}
+            loadingId={loadingId}
           />
         ))}
 
