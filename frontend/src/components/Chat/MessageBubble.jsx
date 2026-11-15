@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Scale } from 'lucide-react';
-import SourceCard from './SourceCard';
+import { Volume2, VolumeX, Square } from 'lucide-react';
 
 /**
  * Formats a Date object into a human-readable time string (e.g. "2:34 PM").
@@ -53,11 +52,9 @@ function UserBubble({ message }) {
 
 /**
  * SaulBubble — left-aligned dark card with SAUL avatar for assistant messages.
+ * Includes Voice Message playback and no legal citations button.
  */
-function SaulBubble({ message }) {
-  const [sourcesOpen, setSourcesOpen] = useState(false);
-  const hasSources = message.sources && message.sources.length > 0;
-
+function SaulBubble({ message, onSpeak, isSpeakingThis }) {
   return (
     <div className="flex items-start gap-3 group">
       {/* Avatar */}
@@ -78,26 +75,38 @@ function SaulBubble({ message }) {
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
           </div>
 
-          {/* Source Citations Toggle */}
-          {hasSources && (
-            <div className="mt-4 pt-3 border-t border-white/5">
+          {/* Voice Message Audio Player Action */}
+          {!message.error && message.content && (
+            <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
               <button
-                onClick={() => setSourcesOpen((prev) => !prev)}
-                className="text-xs font-medium text-gold hover:text-gold-light transition-colors flex items-center gap-1.5"
+                type="button"
+                onClick={() => onSpeak && onSpeak(message.content, message.id)}
+                className={`inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-xl border transition-all ${
+                  isSpeakingThis
+                    ? 'bg-gold/20 text-gold border-gold/40 shadow-sm shadow-gold/20'
+                    : 'bg-white/5 text-slate-300 border-white/10 hover:border-gold/30 hover:text-gold'
+                }`}
+                title={isSpeakingThis ? 'Stop voice message' : 'Listen to Saul read this message aloud'}
               >
-                <span>{sourcesOpen ? '▾ Hide Legal Citations' : '▸ View Legal Citations'}</span>
-                <span className="bg-gold/15 text-gold text-[10px] px-1.5 py-0.5 rounded-full font-mono">
-                  {message.sources.length}
-                </span>
+                {isSpeakingThis ? (
+                  <>
+                    <Square className="w-3.5 h-3.5 text-gold fill-gold" />
+                    <span>Stop Voice Note</span>
+                    {/* Animated sound wave bars */}
+                    <div className="flex items-center gap-0.5 h-3 ml-1">
+                      <span className="w-0.5 bg-gold rounded-full soundwave-bar" style={{ animationDelay: '0ms' }} />
+                      <span className="w-0.5 bg-gold rounded-full soundwave-bar" style={{ animationDelay: '200ms' }} />
+                      <span className="w-0.5 bg-gold rounded-full soundwave-bar" style={{ animationDelay: '400ms' }} />
+                      <span className="w-0.5 bg-gold rounded-full soundwave-bar" style={{ animationDelay: '100ms' }} />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-3.5 h-3.5 text-gold" />
+                    <span>Listen (Voice Note)</span>
+                  </>
+                )}
               </button>
-
-              {sourcesOpen && (
-                <div className="mt-3 space-y-2">
-                  {message.sources.map((src, i) => (
-                    <SourceCard key={i} source={src} index={i + 1} />
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -110,9 +119,15 @@ function SaulBubble({ message }) {
   );
 }
 
-export default function MessageBubble({ message }) {
+export default function MessageBubble({ message, onSpeak, speakingId }) {
   if (message.role === 'user') {
     return <UserBubble message={message} />;
   }
-  return <SaulBubble message={message} />;
+  return (
+    <SaulBubble
+      message={message}
+      onSpeak={onSpeak}
+      isSpeakingThis={speakingId === message.id}
+    />
+  );
 }
