@@ -57,22 +57,35 @@ class TTSService:
 
         return cleaned.strip()
 
+    @staticmethod
+    def format_expressive_speech(text: str) -> str:
+        """Inject Fish Audio Drama 3 natural-language stage directions for Jimmy McGill acting."""
+        # Prepend signature fast-talking, charismatic criminal lawyer direction
+        drama_text = f"[fast-talking, charismatic, animated lawyer with sharp Jimmy McGill swagger] {text}"
+        # Enhance conversational questions with persuasive intonation
+        drama_text = re.sub(r'(\?\s+)', r'? [persuasive] ', drama_text)
+        # Add swagger before iconic punchlines
+        drama_text = re.sub(r'(Better Call Saul!?|Better call Saul!?)', r'[smirks, confident] \1', drama_text, flags=re.IGNORECASE)
+        return drama_text
+
     async def stream_speech(self, text: str):
         """Stream MP3 audio chunks for low-latency playback."""
         clean_text = self.clean_text_for_speech(text)
         if not clean_text:
             return
 
-        # 1. Fish Audio streaming (Exact free Saul Goodman voice model from fish.audio!)
+        # 1. Fish Audio streaming with Drama 3 model and Jimmy McGill acting tags
         if settings.FISH_AUDIO_API_KEY and settings.FISH_AUDIO_VOICE_ID:
             try:
                 url = "https://api.fish.audio/v1/tts"
                 headers = {
                     "Authorization": f"Bearer {settings.FISH_AUDIO_API_KEY}",
                     "Content-Type": "application/json",
+                    "model": "drama-3",  # Uses Fish Audio Drama 3 for dramatic acting!
                 }
+                expressive_text = self.format_expressive_speech(clean_text)
                 payload = {
-                    "text": clean_text,
+                    "text": expressive_text,
                     "reference_id": settings.FISH_AUDIO_VOICE_ID,
                     "format": "mp3",
                 }
@@ -143,9 +156,11 @@ class TTSService:
                 headers = {
                     "Authorization": f"Bearer {settings.FISH_AUDIO_API_KEY}",
                     "Content-Type": "application/json",
+                    "model": "drama-3",
                 }
+                expressive_text = self.format_expressive_speech(clean_text)
                 payload = {
-                    "text": clean_text,
+                    "text": expressive_text,
                     "reference_id": settings.FISH_AUDIO_VOICE_ID,
                     "format": "mp3",
                 }
